@@ -3,7 +3,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="copyright" content="MyBetaSoft Selim DURMUŞ &amp; Yavuz Selim DURMUŞ © TrLab SkyLazarus MyBetaSoftware">	
     <meta name="author" content="Selim DURMUŞ &amp; Yavuz Selim DURMUŞ">
-    <title>CandyPop54 v1.0 54Gamez</title>
+    <title>CandyPop54 v1.0.1 54Gamez</title>
     <style>
         :root {
             --bg-color: #1a1a2e;
@@ -396,7 +396,7 @@
 
     <div class="top-bar">
         <div class="title-area">
-            <div class="game-name">CandyPop54 v1.0</div>
+            <div class="game-name">CandyPop54 v1.0.1</div>
             <div class="company-name">54Gamez</div>
         </div>
         <div class="stats-area">
@@ -407,7 +407,7 @@
         </div>
         <div class="btn-area">
             <button class="icon-btn" onclick="showScoreboard()" title="Skor Tablosu">🏅</button>
-            <button class="icon-btn" onclick="newGame()" title="Yeni Oyun">🔄</button>
+            <button class="icon-btn" onclick="restartCurrentLevel()" title="Seviyeye Yeniden Başla">🔄</button>
             <button class="icon-btn" onclick="openModal(&#39;settings-modal&#39;)" title="Ayarlar">⚙️</button>
             <button class="icon-btn" onclick="openModal(&#39;about-modal&#39;)" title="Hakkında">ℹ️</button>
         </div>
@@ -445,7 +445,7 @@
 
     <div id="score-modal" class="modal">
         <div class="modal-content">
-            <h3>🏆 En İyi Skorlar 🏆</h3>
+            <h3>🏆 En İyi Kariyer Puanları 🏆</h3>
             <ul class="score-list" id="score-list-ul">
                 </ul>
             <button class="modal-close" onclick="closeModal(&#39;score-modal&#39;)">Kapat</button>
@@ -455,7 +455,7 @@
     <div id="about-modal" class="modal">
         <div class="modal-content">
             <h3>Hakkında</h3>
-            <p><strong>CandyPop54 v1.0 54Gamez</strong></p>
+            <p><strong>CandyPop54 v1.0.1 54Gamez</strong></p>
             <p><strong>Credits:</strong> Programcılar Selim DURMUŞ &amp; Yavuz Selim DURMUŞ</p>
             <p><strong>Copyright:</strong> TrLab™ SkyLazarus™ MyBetaSoft MyBetaSoftware</p>
             <p><a href="https://mybetasoftware.com/" target="_blank" style="color: #4caf50; font-weight: bold; text-decoration: none;">mybetasoftware.com</a></p>
@@ -504,7 +504,8 @@
 				</select>
 				<button class="modal-close" onclick="soundVictory()">🔊 Ses Testi</button>
 			</div>
-            <button class="modal-close" onclick="closeModal(&#39;settings-modal&#39;)">Uygula ve Yeniden Başlat</button>
+            <button class="modal-close" onclick="newGame()">En Baştan Yeni Oyun</button>
+            <button class="modal-close" onclick="closeModal(&#39;settings-modal&#39;)">Uygula ve Kapat</button>
         </div>
     </div>
 
@@ -569,7 +570,7 @@
 
         let board = [];
         let score = 0;
-		let careerScore = 0;
+		let careerScore = Number(localStorage.getItem("CandyPop54CareerScore")) || 0;
         let targetScore = 500;
         let currentLevel = 0; // 0-indexed
 
@@ -744,21 +745,21 @@
         }
 
         // --- SKOR TABLOSU ---
-        function saveScore(totalScore) {
-            let scores = JSON.parse(localStorage.getItem('CandyPop54Scores')) || [];
+        function saveScore(totalCareerScore) {
+            let scores = JSON.parse(localStorage.getItem('CandyPop54CareerScores')) || [];
             let lvlDef = getLevelDef(currentLevel);
             scores.push({
-                score: totalScore,
-                info: `Seviye ${currentLevel + 1} - ${lvlDef.name}`,
+                score: totalCareerScore,
+                info: `Seviye ${currentLevel + 1} sonrası - ${lvlDef.name}`,
                 date: new Date().toLocaleDateString()
             });
             scores.sort((a, b) => b.score - a.score);
             scores = scores.slice(0, 10);
-            localStorage.setItem('CandyPop54Scores', JSON.stringify(scores));
+            localStorage.setItem('CandyPop54CareerScores', JSON.stringify(scores));
         }
 
         function showScoreboard() {
-            let scores = JSON.parse(localStorage.getItem('CandyPop54Scores')) || [];
+            let scores = JSON.parse(localStorage.getItem('CandyPop54CareerScores')) || [];
             let ul = document.getElementById('score-list-ul');
             ul.innerHTML = '';
             if (scores.length === 0) {
@@ -893,8 +894,6 @@
 
             if (score >= targetScore && gameActive) {
                 endGame(true);
-				let finalScore = Math.floor(score + timeBonus);
-				careerScore += finalScore;
 				soundVictory();
             }
         }
@@ -1177,7 +1176,12 @@
                     timeBonus = Math.max(0, (idealTime - currentTime) * 10);
                 }
                 let finalScore = Math.floor(score + timeBonus);
-                saveScore(finalScore);
+				careerScore += finalScore;
+				localStorage.setItem("CandyPop54CareerScore", careerScore);
+				document.getElementById('career-score').innerText =
+					careerScore.toLocaleString();
+				saveGame();
+                saveScore(careerScore);
 
                 // Seviye tamamlandı ekranı göster
                 showLevelComplete(finalScore, timeBonus);
@@ -1299,7 +1303,9 @@
 
 			currentLevel = data.level;
 			score = data.score;
-			careerScore = data.careerScore || 0;
+			careerScore = Number(localStorage.getItem("CandyPop54CareerScore")) ||
+				data.careerScore || 0;
+			localStorage.setItem("CandyPop54CareerScore", careerScore);
 			currentTime = data.time;
 			extraPoolCount = data.extraPool;
 			board = data.board;
@@ -1327,7 +1333,18 @@
 
 		score = 0;
 
+		document.getElementById("settings-modal").style.display = "none";
+
 		initGame();
+	}
+
+	function restartCurrentLevel() {
+
+		score = 0;
+
+		initGame();
+
+		saveGame();
 	}
 	
 	
