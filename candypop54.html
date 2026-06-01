@@ -3,7 +3,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="copyright" content="MyBetaSoft Selim DURMUŞ &amp; Yavuz Selim DURMUŞ © TrLab SkyLazarus MyBetaSoftware">	
     <meta name="author" content="Selim DURMUŞ &amp; Yavuz Selim DURMUŞ">
-    <title>CandyPop54 v0.8 MyBetaSoft</title>
+    <title>CandyPop54 v0.9 MyBetaSoft</title>
     <style>
         :root {
             --bg-color: #1a1a2e;
@@ -110,8 +110,8 @@
 
         #board {
             display: grid;
-            grid-template-columns: repeat(9, 1fr);
-            grid-template-rows: repeat(9, 1fr);
+            grid-template-columns: repeat(var(--grid-size), 1fr);
+			grid-template-rows: repeat(var(--grid-size), 1fr);
             gap: 4px;
             background-color: var(--board-bg);
             padding: 8px;
@@ -454,7 +454,7 @@
     <div id="about-modal" class="modal">
         <div class="modal-content">
             <h3>Hakkında</h3>
-            <p><strong>CandyPop54 v0.8</strong></p>
+            <p><strong>CandyPop54 v0.9</strong></p>
             <p><strong>Credits:</strong> Programcılar Selim DURMUŞ &amp; Yavuz Selim DURMUŞ</p>
             <p><strong>Copyright:</strong> TrLab™ SkyLazarus™ MyBetaSoft MyBetaSoftware</p>
             <p><a href="https://mybetasoftware.com/" target="_blank" style="color: #4caf50; font-weight: bold; text-decoration: none;">mybetasoftware.com</a></p>
@@ -510,8 +510,8 @@
     </div>
 
     <script>
-        const rows = 9;
-        const cols = 9;
+        let rows = 9;
+		let cols = 9;
 
         // Tüm mevcut semboller havuzu
         const ALL_TYPES = ['🍎', '🍊', '🍇', '🫐', '🍉', '🍌', '🍓', '🥝', '🍑'];
@@ -523,21 +523,21 @@
         // ============================================================
         const LEVELS = [
             // Seviye 1-3: Başlangıç (6 sembol)
-            { name: "Başlangıç",    targetScore: 500,   timeSeconds: 180, extraPool: 0,   multiplier: 1.0, symbolCount: 6 },
-            { name: "Isınma",       targetScore: 800,   timeSeconds: 150, extraPool: 40,  multiplier: 1.2, symbolCount: 6 },
-            { name: "Hazır",        targetScore: 1200,  timeSeconds: 120, extraPool: 81,  multiplier: 1.5, symbolCount: 6 },
+            { name: "Başlangıç",    targetScore: 250,   timeSeconds: 200, extraPool: 0,   multiplier: 1.0, symbolCount: 6, boardSize: 6 },
+            { name: "Isınma",       targetScore: 400,   timeSeconds: 180, extraPool: 40,  multiplier: 1.2, symbolCount: 6, boardSize: 6},
+            { name: "Hazır",        targetScore: 650,  timeSeconds: 150, extraPool: 81,  multiplier: 1.5, symbolCount: 6, boardSize: 7 },
             // Seviye 4-6: Orta (7 sembol)
-            { name: "Rekabetçi",    targetScore: 1800,  timeSeconds: 110, extraPool: 100, multiplier: 1.7, symbolCount: 7 },
-            { name: "Usta",         targetScore: 2500,  timeSeconds: 100, extraPool: 120, multiplier: 2.0, symbolCount: 7 },
-            { name: "Uzman",        targetScore: 3000,  timeSeconds: 90,  extraPool: 130, multiplier: 2.2, symbolCount: 7 },
+            { name: "Rekabetçi",    targetScore: 1000,  timeSeconds: 130, extraPool: 100, multiplier: 1.7, symbolCount: 7, boardSize: 7 },
+            { name: "Usta",         targetScore: 1500,  timeSeconds: 120, extraPool: 120, multiplier: 2.0, symbolCount: 7, boardSize: 7 },
+            { name: "Uzman",        targetScore: 2000,  timeSeconds: 110,  extraPool: 130, multiplier: 2.2, symbolCount: 7, boardSize: 7 },
             // Seviye 7-9: İleri (8 sembol)
-            { name: "Efsane",       targetScore: 4000,  timeSeconds: 80,  extraPool: 140, multiplier: 2.5, symbolCount: 8 },
-            { name: "Şampiyon",     targetScore: 5000,  timeSeconds: 70,  extraPool: 150, multiplier: 2.8, symbolCount: 8 },
-            { name: "Efsanevi",     targetScore: 6000,  timeSeconds: 60,  extraPool: 162, multiplier: 3.0, symbolCount: 8 },
+            { name: "Efsane",       targetScore: 3000,  timeSeconds: 100,  extraPool: 140, multiplier: 2.5, symbolCount: 8, boardSize: 8 },
+            { name: "Şampiyon",     targetScore: 3500,  timeSeconds: 90,  extraPool: 150, multiplier: 2.8, symbolCount: 8, boardSize: 8 },
+            { name: "Efsanevi",     targetScore: 4000,  timeSeconds: 80,  extraPool: 162, multiplier: 3.0, symbolCount: 8, boardSize: 8 },
             // Seviye 10+: Kaos (9 sembol, sonsuz döngü)
-            { name: "KAOS MODU",    targetScore: 8000,  timeSeconds: 55,  extraPool: 162, multiplier: 3.5, symbolCount: 9 },
-            { name: "KAOS+",        targetScore: 10000, timeSeconds: 50,  extraPool: 162, multiplier: 4.0, symbolCount: 9 },
-            { name: "ULTRA KAOS",   targetScore: 12000, timeSeconds: 45,  extraPool: 162, multiplier: 4.5, symbolCount: 9 },
+            { name: "KAOS MODU",    targetScore: 5000,  timeSeconds: 70,  extraPool: 162, multiplier: 3.5, symbolCount: 9, boardSize: 9 },
+            { name: "KAOS+",        targetScore: 6000, timeSeconds: 65,  extraPool: 162, multiplier: 4.0, symbolCount: 9, boardSize: 9 },
+            { name: "ULTRA KAOS",   targetScore: 7000, timeSeconds: 60,  extraPool: 162, multiplier: 4.5, symbolCount: 9, boardSize: 9 },
         ];
 
         // Seviye 12'den sonra sonsuz döngü için dinamik üretim
@@ -547,7 +547,7 @@
             let extra = levelIndex - LEVELS.length;
             return {
                 name: "∞ SONSUZ " + (extra + 1),
-                targetScore: 12000 + (extra + 1) * 2000,
+                targetScore: 7000 + (extra + 1) * 2000,
                 timeSeconds: Math.max(30, 45 - extra * 2),
                 extraPool: 162,
                 multiplier: 4.5 + extra * 0.5,
@@ -690,6 +690,9 @@
             else if (currentLevel < 6) diffBadgeEl.innerText = "ORTA";
             else if (currentLevel < 9) diffBadgeEl.innerText = "ZOR";
             else diffBadgeEl.innerText = "KAOS";
+			
+			rows = lvlDef.boardSize;
+			cols = lvlDef.boardSize;
 
             // Seviye rozeti
             levelBadgeEl.innerText = `⭐ SEVİYE ${currentLevel + 1}`;
@@ -719,6 +722,7 @@
         }
 
         function render() {
+			boardEl.style.setProperty('--grid-size', cols);
             boardEl.innerHTML = '';
             for (let r = 0; r < rows; r++) {
                 for (let c = 0; c < cols; c++) {
