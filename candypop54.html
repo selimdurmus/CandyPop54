@@ -495,6 +495,14 @@
                     <option value="alt">Alt</option>
                 </select>
             </div>
+			<div class="setting-item">
+				<label>Ses Efektleri</label>
+				<select id="sound-select" onchange="changeSound(this.value)">
+					<option value="on">Açık 🔊</option>
+					<option value="off">Kapalı 🔇</option>
+				</select>
+				<button class="modal-close" onclick="soundVictory()">🔊 Ses Testi</button>
+			</div>
             <button class="modal-close" onclick="closeModal(&#39;settings-modal&#39;)">Uygula ve Yeniden Başlat</button>
         </div>
     </div>
@@ -523,20 +531,20 @@
         // ============================================================
         const LEVELS = [
             // Seviye 1-3: Başlangıç (6 sembol)
-            { name: "Başlangıç",    targetScore: 250,   timeSeconds: 200, extraPool: 0,   multiplier: 1.0, symbolCount: 6, boardSize: 6 },
-            { name: "Isınma",       targetScore: 400,   timeSeconds: 180, extraPool: 40,  multiplier: 1.2, symbolCount: 6, boardSize: 6},
-            { name: "Hazır",        targetScore: 650,  timeSeconds: 150, extraPool: 81,  multiplier: 1.5, symbolCount: 6, boardSize: 6 },
+            { name: "Başlangıç",    targetScore: 200,   timeSeconds: 180, extraPool: 0,   multiplier: 1.0, symbolCount: 4, boardSize: 6 },
+            { name: "Isınma",       targetScore: 200,   timeSeconds: 180, extraPool: 40,  multiplier: 1.2, symbolCount: 5, boardSize: 6},
+            { name: "Hazır",        targetScore: 300,  timeSeconds: 180, extraPool: 81,  multiplier: 1.5, symbolCount: 6, boardSize: 6 },
             // Seviye 4-6: Orta (7 sembol)
-            { name: "Rekabetçi",    targetScore: 1000,  timeSeconds: 130, extraPool: 100, multiplier: 1.7, symbolCount: 7, boardSize: 7 },
-            { name: "Usta",         targetScore: 1500,  timeSeconds: 120, extraPool: 120, multiplier: 2.0, symbolCount: 7, boardSize: 7 },
-            { name: "Uzman",        targetScore: 2000,  timeSeconds: 110,  extraPool: 130, multiplier: 2.2, symbolCount: 7, boardSize: 7 },
+            { name: "Rekabetçi",    targetScore: 500,  timeSeconds: 120, extraPool: 100, multiplier: 1.7, symbolCount: 7, boardSize: 7 },
+            { name: "Usta",         targetScore: 1000,  timeSeconds: 120, extraPool: 120, multiplier: 2.0, symbolCount: 7, boardSize: 7 },
+            { name: "Uzman",        targetScore: 1500,  timeSeconds: 120,  extraPool: 130, multiplier: 2.2, symbolCount: 7, boardSize: 7 },
             // Seviye 7-9: İleri (8 sembol)
-            { name: "Efsane",       targetScore: 3000,  timeSeconds: 100,  extraPool: 140, multiplier: 2.5, symbolCount: 8, boardSize: 8 },
-            { name: "Şampiyon",     targetScore: 3500,  timeSeconds: 90,  extraPool: 150, multiplier: 2.8, symbolCount: 8, boardSize: 8 },
-            { name: "Efsanevi",     targetScore: 4000,  timeSeconds: 80,  extraPool: 162, multiplier: 3.0, symbolCount: 8, boardSize: 8 },
+            { name: "Efsane",       targetScore: 2000,  timeSeconds: 110,  extraPool: 140, multiplier: 2.5, symbolCount: 8, boardSize: 8 },
+            { name: "Şampiyon",     targetScore: 3000,  timeSeconds: 100,  extraPool: 150, multiplier: 2.8, symbolCount: 8, boardSize: 8 },
+            { name: "Efsanevi",     targetScore: 4000,  timeSeconds: 90,  extraPool: 162, multiplier: 3.0, symbolCount: 8, boardSize: 8 },
             // Seviye 10+: Kaos (9 sembol, sonsuz döngü)
-            { name: "KAOS MODU",    targetScore: 5000,  timeSeconds: 70,  extraPool: 162, multiplier: 3.5, symbolCount: 9, boardSize: 9 },
-            { name: "KAOS+",        targetScore: 6000, timeSeconds: 65,  extraPool: 162, multiplier: 4.0, symbolCount: 9, boardSize: 9 },
+            { name: "KAOS MODU",    targetScore: 5000,  timeSeconds: 80,  extraPool: 162, multiplier: 3.5, symbolCount: 9, boardSize: 9 },
+            { name: "KAOS+",        targetScore: 6000, timeSeconds: 70,  extraPool: 162, multiplier: 4.0, symbolCount: 9, boardSize: 9 },
             { name: "ULTRA KAOS",   targetScore: 7000, timeSeconds: 60,  extraPool: 162, multiplier: 4.5, symbolCount: 9, boardSize: 9 },
         ];
 
@@ -568,6 +576,7 @@
         let timerMode = 'down'; // Seviye modunda geri sayım varsayılan
         let extraPoolCount = 0;
         let scoreMultiplier = 1;
+		let soundEnabled = true;
 
         // Oyun Durumu
         let gameActive = false;
@@ -578,7 +587,120 @@
         let timerInterval;
         let currentTime = 0;
 
-        const boardEl = document.getElementById('board');
+// =====================================================
+// WEB AUDIO SES MOTORU
+// =====================================================
+
+		let audioCtx = null;
+
+		function initAudio() {
+			if (!audioCtx) {
+				audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+			}
+		}
+
+		function playTone(
+			freq,
+			duration,
+			type = "sine",
+			volume = 0.05
+		) {
+
+		if(!soundEnabled) return;
+
+		if (!audioCtx) return;
+
+		const osc = audioCtx.createOscillator();
+		const gain = audioCtx.createGain();
+
+		osc.type = type;
+		osc.frequency.value = freq;
+
+		gain.gain.setValueAtTime(
+        volume,
+        audioCtx.currentTime
+		);
+
+		gain.gain.exponentialRampToValueAtTime(
+        0.0001,
+        audioCtx.currentTime + duration
+		);
+
+		osc.connect(gain);
+		gain.connect(audioCtx.destination);
+
+		osc.start();
+		osc.stop(audioCtx.currentTime + duration);
+		}
+        
+		function soundClick() {
+			playTone(900, 0.03, "square", 0.03);
+		}
+
+		function soundPop3() {
+			playTone(600, 0.08, "triangle", 0.05);
+		}
+
+		function soundCrystal() {
+			playTone(1200, 0.12, "sine", 0.05);
+			setTimeout(() => playTone(1800, 0.10, "sine", 0.04), 40);
+		}
+
+		function soundEpic() {
+			playTone(700, 0.10, "sawtooth", 0.05);
+			setTimeout(() => playTone(1100, 0.12, "sawtooth", 0.05), 50);
+			setTimeout(() => playTone(1500, 0.15, "sawtooth", 0.05), 100);
+		}
+
+		function soundUltra() {
+			playTone(500, 0.10, "square", 0.06);
+			setTimeout(() => playTone(900, 0.10, "square", 0.06), 60);
+			setTimeout(() => playTone(1400, 0.15, "square", 0.06), 120);
+			setTimeout(() => playTone(2000, 0.20, "square", 0.06), 180);
+		}
+
+		function soundLevelUp() {
+			playTone(523, 0.15);
+			setTimeout(() => playTone(659, 0.15), 150);
+			setTimeout(() => playTone(784, 0.20), 300);
+			setTimeout(() => playTone(1046, 0.30), 500);
+		}
+
+		function soundVictory() {
+			playTone(523, 0.12);
+			setTimeout(() => playTone(659, 0.12), 120);
+			setTimeout(() => playTone(784, 0.12), 240);
+			setTimeout(() => playTone(1046, 0.25), 360);
+			setTimeout(() => playTone(1318, 0.35), 550);
+		}
+
+		function soundFailure() {
+			playTone(400, 0.25, "sawtooth");
+			setTimeout(() => playTone(300, 0.30, "sawtooth"), 180);
+			setTimeout(() => playTone(180, 0.40, "sawtooth"), 350);
+		}
+
+		function soundCountdown() {
+			playTone(1000, 0.05, "square", 0.04);
+		}
+
+		function soundAchievement() {
+			playTone(800, 0.08);
+			setTimeout(() => playTone(1200, 0.08), 80);
+			setTimeout(() => playTone(1600, 0.12), 160);
+		}
+		
+		function changeSound(value) {
+
+			soundEnabled = value === "on";
+
+			localStorage.setItem(
+			"CandyPop54Sound",
+			soundEnabled ? "on" : "off"
+			);
+		}
+
+		const boardEl = document.getElementById('board');
         const scoreEl = document.getElementById('score');
         const poolCountEl = document.getElementById('pool-count');
         const timeEl = document.getElementById('time');
@@ -594,7 +716,7 @@
         function closeModal(id) {
             document.getElementById(id).style.display = 'none';
             if (id === 'settings-modal' && !gameActive && score === 0) {
-                initGame();
+			initGame();
             }
         }
 
@@ -652,6 +774,7 @@
 
         // --- ZAMANLAYICI ---
         function startPlay() {
+			initAudio();
             startOverlay.style.display = 'none';
             gameActive = true;
             clearInterval(timerInterval);
@@ -662,9 +785,13 @@
                     currentTime--;
                     if (currentTime <= 0) {
                         endGame(false);
+						soundFailure();
                     }
                 }
                 updateTimerDisplay();
+				if (currentTime <= 10 && currentTime > 0) {
+					soundCountdown();
+				}
             }, 1000);
         }
 
@@ -757,11 +884,13 @@
 
             if (score >= targetScore && gameActive) {
                 endGame(true);
+				soundVictory();
             }
         }
 
         // --- ETKİLEŞİM VE MEKANİKLER ---
         function handleCellClick(r, c) {
+			 soundClick();
             if (!gameActive || board[r][c] === null) return;
 
             if (!selectedCell && glowingCells.some(gc => gc.r === r && gc.c === c)) {
@@ -959,7 +1088,25 @@
                 });
             });
 
+			if (biggestSize <= 3) {
+				soundPop3();
+			}
+			else if (biggestSize <= 5) {
+				soundCrystal();
+			}
+			else if (biggestSize <= 7) {
+				soundEpic();
+			}
+			else {
+				soundUltra();
+			}
+
             score += totalPoints * scoreMultiplier;
+			
+			if(score >= 1000 && !window.a1000){
+				window.a1000 = true;
+				soundAchievement();
+			}
 
             // Popup göster (en büyük grup için)
             let lbl = labelForSize(biggestSize);
@@ -1034,6 +1181,7 @@
 
         // --- SEVİYE TAMAMLANDI EKRANI ---
         function showLevelComplete(finalScore, timeBonus) {
+			soundLevelUp();
             let lvlDef = getLevelDef(currentLevel);
             let nextLevel = currentLevel + 1;
             let nextDef = getLevelDef(nextLevel);
@@ -1093,6 +1241,14 @@
         }
 
         // Açılış
+		const savedSound =
+			localStorage.getItem("CandyPop54Sound");
+		if(savedSound){
+			soundEnabled = savedSound === "on";
+			document.getElementById("sound-select").value =
+				savedSound;
+		}
+		
         initGame();
     </script>
 
