@@ -3,7 +3,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="copyright" content="MyBetaSoft Selim DURMUŞ &amp; Yavuz Selim DURMUŞ © TrLab SkyLazarus MyBetaSoftware">	
     <meta name="author" content="Selim DURMUŞ &amp; Yavuz Selim DURMUŞ">
-    <title>CandyPop54 v0.9 MyBetaSoft</title>
+    <title>CandyPop54 v1.0 54Gamez</title>
     <style>
         :root {
             --bg-color: #1a1a2e;
@@ -396,8 +396,8 @@
 
     <div class="top-bar">
         <div class="title-area">
-            <div class="game-name">CandyPop54 0.9</div>
-            <div class="company-name">MyBetaSoft</div>
+            <div class="game-name">CandyPop54 v1.0</div>
+            <div class="company-name">54Gamez</div>
         </div>
         <div class="stats-area">
             <span title="Puan">🏆 <span id="score">0 / 500</span></span>
@@ -406,7 +406,7 @@
         </div>
         <div class="btn-area">
             <button class="icon-btn" onclick="showScoreboard()" title="Skor Tablosu">🏅</button>
-            <button class="icon-btn" onclick="initGame()" title="Yeniden Başlat">🔄</button>
+            <button class="icon-btn" onclick="newGame()" title="Yeni Oyun">🔄</button>
             <button class="icon-btn" onclick="openModal(&#39;settings-modal&#39;)" title="Ayarlar">⚙️</button>
             <button class="icon-btn" onclick="openModal(&#39;about-modal&#39;)" title="Hakkında">ℹ️</button>
         </div>
@@ -454,7 +454,7 @@
     <div id="about-modal" class="modal">
         <div class="modal-content">
             <h3>Hakkında</h3>
-            <p><strong>CandyPop54 v0.9</strong></p>
+            <p><strong>CandyPop54 v1.0 54Gamez</strong></p>
             <p><strong>Credits:</strong> Programcılar Selim DURMUŞ &amp; Yavuz Selim DURMUŞ</p>
             <p><strong>Copyright:</strong> TrLab™ SkyLazarus™ MyBetaSoft MyBetaSoftware</p>
             <p><a href="https://mybetasoftware.com/" target="_blank" style="color: #4caf50; font-weight: bold; text-decoration: none;">mybetasoftware.com</a></p>
@@ -895,6 +895,7 @@
 
             if (!selectedCell && glowingCells.some(gc => gc.r === r && gc.c === c)) {
                 popGlowingCells();
+				saveGame();
                 return;
             }
 
@@ -920,6 +921,7 @@
                 } else {
                     if (glowingCells.some(gc => gc.r === r && gc.c === c)) {
                         popGlowingCells();
+						saveGame();
                         selectedCell = null;
                         return;
                     }
@@ -1215,6 +1217,8 @@
         function goNextLevel() {
             levelCompleteEl.style.display = 'none';
             currentLevel++;
+			saveGame();
+			levelCompleteEl.style.display = 'none';
             initGame();
         }
 
@@ -1249,7 +1253,71 @@
 				savedSound;
 		}
 		
-        initGame();
+       if(!loadGame()){
+			initGame();
+		}
+		
+	function saveGame() {
+
+    const saveData = {
+        level: currentLevel,
+        score: score,
+        time: currentTime,
+        extraPool: extraPoolCount,
+        board: board,
+        savedAt: Date.now()
+    };
+
+    localStorage.setItem(
+        "CandyPop54Save",
+        JSON.stringify(saveData)
+    );
+	}
+
+	function loadGame() {
+
+		const raw =
+			localStorage.getItem("CandyPop54Save");
+
+		if(!raw) return false;
+
+			try {
+
+			const data = JSON.parse(raw);
+
+			currentLevel = data.level;
+			score = data.score;
+			currentTime = data.time;
+			extraPoolCount = data.extraPool;
+			board = data.board;
+
+			applyLevelSettings();
+
+			render();
+
+			return true;
+
+			} catch(err){
+
+			console.error(err);
+			return false;
+		}
+	}
+	
+	function newGame() {
+
+		localStorage.removeItem(
+        "CandyPop54Save"
+		);
+
+		currentLevel = 0;
+
+		score = 0;
+
+		initGame();
+	}
+	
+	
     </script>
 
 
