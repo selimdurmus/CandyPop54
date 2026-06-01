@@ -396,7 +396,7 @@
 
     <div class="top-bar">
         <div class="title-area">
-            <div class="game-name">Parlat&amp;Patlat 0.8</div>
+            <div class="game-name">CandyPop54 0.8</div>
             <div class="company-name">MyBetaSoft</div>
         </div>
         <div class="stats-area">
@@ -454,7 +454,7 @@
     <div id="about-modal" class="modal">
         <div class="modal-content">
             <h3>Hakkında</h3>
-            <p><strong>Parlat &amp; Patlat v0.8</strong></p>
+            <p><strong>CandyPop54 v0.8</strong></p>
             <p><strong>Credits:</strong> Programcılar Selim DURMUŞ &amp; Yavuz Selim DURMUŞ</p>
             <p><strong>Copyright:</strong> TrLab™ SkyLazarus™ MyBetaSoft MyBetaSoftware</p>
             <p><a href="https://mybetasoftware.com/" target="_blank" style="color: #4caf50; font-weight: bold; text-decoration: none;">mybetasoftware.com</a></p>
@@ -621,7 +621,7 @@
 
         // --- SKOR TABLOSU ---
         function saveScore(totalScore) {
-            let scores = JSON.parse(localStorage.getItem('parlatPatlatScores')) || [];
+            let scores = JSON.parse(localStorage.getItem('CandyPop54Scores')) || [];
             let lvlDef = getLevelDef(currentLevel);
             scores.push({
                 score: totalScore,
@@ -630,11 +630,11 @@
             });
             scores.sort((a, b) => b.score - a.score);
             scores = scores.slice(0, 10);
-            localStorage.setItem('parlatPatlatScores', JSON.stringify(scores));
+            localStorage.setItem('CandyPop54Scores', JSON.stringify(scores));
         }
 
         function showScoreboard() {
-            let scores = JSON.parse(localStorage.getItem('parlatPatlatScores')) || [];
+            let scores = JSON.parse(localStorage.getItem('CandyPop54Scores')) || [];
             let ul = document.getElementById('score-list-ul');
             ul.innerHTML = '';
             if (scores.length === 0) {
