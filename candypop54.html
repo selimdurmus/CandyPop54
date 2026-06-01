@@ -400,6 +400,7 @@
             <div class="company-name">54Gamez</div>
         </div>
         <div class="stats-area">
+			<span title="Kariyer Puanı">💎 <span id="career-score">0</span></span>
             <span title="Puan">🏆 <span id="score">0 / 500</span></span>
             <span title="Kalan Sembol">⬇️ <span id="pool-count">0</span></span>
             <span title="Süre">⏱️ <span id="time">3:00</span></span>
@@ -568,6 +569,7 @@
 
         let board = [];
         let score = 0;
+		let careerScore = 0;
         let targetScore = 500;
         let currentLevel = 0; // 0-indexed
 
@@ -849,6 +851,10 @@
         }
 
         function render() {
+		
+		const careerScoreEl =
+		document.getElementById('career-score');
+			
 			boardEl.style.setProperty('--grid-size', cols);
             boardEl.innerHTML = '';
             for (let r = 0; r < rows; r++) {
@@ -881,9 +887,14 @@
 
             scoreEl.innerText = Math.floor(score) + " / " + targetScore;
             poolCountEl.innerText = extraPoolCount;
+			
+			careerScoreEl.innerText =
+			careerScore.toLocaleString();
 
             if (score >= targetScore && gameActive) {
                 endGame(true);
+				let finalScore = Math.floor(score + timeBonus);
+				careerScore += finalScore;
 				soundVictory();
             }
         }
@@ -1262,6 +1273,7 @@
     const saveData = {
         level: currentLevel,
         score: score,
+		careerScore: careerScore,
         time: currentTime,
         extraPool: extraPoolCount,
         board: board,
@@ -1287,6 +1299,7 @@
 
 			currentLevel = data.level;
 			score = data.score;
+			careerScore = data.careerScore || 0;
 			currentTime = data.time;
 			extraPoolCount = data.extraPool;
 			board = data.board;
